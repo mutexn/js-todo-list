@@ -9,6 +9,7 @@ const table = document.querySelector("table");
 const item = {};
 let list = [];
 
+// 登録ボタンクリック時のイベント
 submit.addEventListener("click", () => {
   if (todo.value === "") {
     item.todo = "Empty";
@@ -35,6 +36,7 @@ submit.addEventListener("click", () => {
   deadline.value = "";
 });
 
+// itemオブジェクトから表に行を追加する
 const addItem = (item) => {
   const tr = document.createElement("tr");
 
@@ -45,6 +47,7 @@ const addItem = (item) => {
       checkbox.type = "checkbox";
       checkbox.checked = item[prop];
       td.appendChild(checkbox);
+      checkbox.addEventListener("change", checkBoxListener);
     } else {
       td.textContent = item[prop];
     }
@@ -54,6 +57,7 @@ const addItem = (item) => {
   table.appendChild(tr);
 };
 
+// リロード時、ローカルストレージから読み込んでリストを作成する
 document.addEventListener("DOMContentLoaded", () => {
   const json = storage.todoList;
   if (json === undefined) {
@@ -66,3 +70,56 @@ document.addEventListener("DOMContentLoaded", () => {
     addItem(item);
   }
 });
+
+// ソートボタンの作成
+const filterButton = document.createElement("button"); // ボタン要素を生成
+filterButton.textContent = "優先度（高）で絞り込み";
+filterButton.id = "priority"; // CSSでの装飾用
+const main = document.querySelector("main");
+main.appendChild(filterButton);
+
+filterButton.addEventListener("click", () => {
+  clearTable();
+
+  for (const item of list) {
+    if (item.priority === "高") {
+      addItem(item);
+    }
+  }
+});
+
+// 表のヘッダー行を残して、その他の行を削除する
+const clearTable = () => {
+  const trList = Array.from(document.getElementsByTagName("tr"));
+  trList.shift();
+  for (const tr of trList) {
+    tr.remove();
+  }
+};
+
+// 削除ボタンの作成
+const remove = document.createElement("button");
+remove.textContent = "完了したTODOを削除する";
+remove.id = "remove"; // CSS装飾用
+const br = document.createElement("br"); // 改行したい
+main.appendChild(br);
+main.appendChild(remove);
+
+remove.addEventListener("click", () => {
+  clearTable();
+
+  list = list.filter((item) => item.done === false);
+  for (const item of list) {
+    addItem(item);
+  }
+
+  storage.todoList = JSON.stringify(list);
+});
+
+const checkBoxListener = (ev) => {
+  const trList = Array.from(document.getElementsByTagName("tr"));
+  const currentTr = ev.currentTarget.parentElement.parentElement;
+  const idx = trList.indexOf(currentTr) - 1;
+  list[idx].done = ev.currentTarget.checked;
+  storage.todoList = JSON.stringify(list);
+};
