@@ -7,7 +7,7 @@ const deadline = document.querySelector('input[type="date"]');
 const submit = document.getElementById("submit");
 const table = document.querySelector("table");
 const item = {};
-const list = [];
+let list = [];
 
 submit.addEventListener("click", () => {
   if (todo.value === "") {
@@ -27,6 +27,8 @@ submit.addEventListener("click", () => {
   item.done = false;
 
   addItem(item);
+  list.push(item);
+  storage.todoList = JSON.stringify(list);
 
   todo.value = "";
   priority.value = "普";
@@ -50,6 +52,17 @@ const addItem = (item) => {
   }
 
   table.appendChild(tr);
-  list.push(item);
-  storage.todoList = JSON.stringify(list);
 };
+
+document.addEventListener("DOMContentLoaded", () => {
+  const json = storage.todoList;
+  if (json === undefined) {
+    return;
+  }
+
+  list = JSON.parse(json);
+
+  for (const item of list) {
+    addItem(item);
+  }
+});
